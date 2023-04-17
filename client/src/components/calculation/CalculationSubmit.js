@@ -1,9 +1,14 @@
 import axios from 'axios'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const CalculationSubmit = () => {
 
   const [form, setForm] = useState({ num1: '', num2: '' })
+  const [calculations, setCalculations] = useState([])
+
+  useEffect(() => {
+    loadCalculations()
+  }, [])
 
   const onChange = (event) => {
     const { name, value } = event.target
@@ -14,6 +19,13 @@ const CalculationSubmit = () => {
     axios.post('/api/v1.0/calculations', form)
       .then(resp => {
         setForm(prevState => ({ ...prevState, sum: resp.data }))
+      })
+  }
+
+  const loadCalculations = () => {
+    axios.get('/api/v1.0/calculations')
+      .then(resp => {
+        setCalculations(resp.data)
       })
   }
 
@@ -36,7 +48,14 @@ const CalculationSubmit = () => {
           <input className='form-control' value={form.sum} />
         </div>
       </div>
-      <button className='btn btn-primary' onClick={onClickSubmit}> Hesapla </button>
+      <button className='btn btn-primary mb-5' onClick={onClickSubmit}> Hesapla </button>
+      {
+        calculations.map(calculation => (
+          <div key={calculation.id}>
+            <label>{calculation.num1}+{calculation.num2}={calculation.sum} </label>
+          </div>
+        ))
+      }
     </div>
   )
 }

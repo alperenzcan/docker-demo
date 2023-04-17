@@ -1,5 +1,7 @@
 package com.alperen.server.calculation;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,5 +14,9 @@ public class CalculationService {
 	Calculation create(Calculation calculation) {
 		calculation.setSum(calculation.getNum1()+calculation.getNum2());
 		return calculationRepository.save(calculation);
+	}
+
+	public List<Calculation> getAll() {
+		return calculationRepository.findAll();
 	}
 }
