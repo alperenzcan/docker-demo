@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   server:
     build:
       context: server
@@ -8,31 +9,49 @@ services:
     ports:
       - 8080:8080
     environment:
-      DB_URL: jdbc:mysql://mysql-db/docker_demo_db
-      DB_USERNAME: example_user
-      DB_PASSWORD: password123
+      # note that "postgres" has to match the name of the postgres container
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/docker_demo_db"
+      SPRING_DATASOURCE_USERNAME: dbuser
+      SPRING_DATASOURCE_PASSWORD: dbpassword
+      SPRING_LOGGING_LEVEL_ROOT: INFO
     depends_on:
-      - mysql-container
+      - postgres
     restart: always
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+      - frontend
+
   client:
     build:
       context: client
       dockerfile: Dockerfile
     ports:
-      - 80:3000
+      - "80:80"
     depends_on:
       - server
     restart: always
-  mysql-container:
-    image: mysql:8.0.28
+    networks:
+      - frontend
+      - backend
+
+  postgres:
+    image: postgres:13-alpine
+    ports:
+      - 5433:5432
     volumes:
-      - dbdata:/var/lib/mysql
+      - dbdata:/var/lib/postgres
+    command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
     environment:
-      MYSQL_DATABASE: docker_demo_db
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_USER: example_user
-      MYSQL_PASSWORD: password123
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbpassword
+      POSTGRES_DB: docker_demo_db
     restart: always
+    networks:
+      - backend  
 
 volumes:
-  dbdata:
+  dbdata: 
+
+networks:
+  backend:
+  frontend:
