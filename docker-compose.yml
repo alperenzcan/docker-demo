@@ -10,16 +10,12 @@ services:
       - 8080:8080
     environment:
       # note that "postgres" has to match the name of the postgres container
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/docker_demo_db"
-      SPRING_DATASOURCE_USERNAME: dbuser
-      SPRING_DATASOURCE_PASSWORD: dbpassword
-      SPRING_LOGGING_LEVEL_ROOT: INFO
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/docker_demo_db"
+      DB_USERNAME: example_user
+      DB_PASSWORD: password123
     depends_on:
-      - postgres
+      - mysql
     restart: always
-    networks: # Networks to join (Services on the same network can communicate with each other using their name)
-      - backend
-      - frontend
 
   client:
     build:
@@ -30,28 +26,19 @@ services:
     depends_on:
       - server
     restart: always
-    networks:
-      - frontend
-      - backend
 
-  postgres:
-    image: postgres:13-alpine
+  mysql:
+    image: mysql:8.0.28
     ports:
-      - 5433:5432
+      - 3306:3306
     volumes:
-      - dbdata:/var/lib/postgres
-    command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
+      - dbdata:/var/lib/mysql
     environment:
-      POSTGRES_USER: dbuser
-      POSTGRES_PASSWORD: dbpassword
-      POSTGRES_DB: docker_demo_db
+      MYSQL_DATABASE: docker_demo_db
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_USER: example_user
+      MYSQL_PASSWORD: password123
     restart: always
-    networks:
-      - backend  
 
 volumes:
   dbdata: 
-
-networks:
-  backend:
-  frontend:

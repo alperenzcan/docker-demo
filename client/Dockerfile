@@ -1,15 +1,16 @@
-FROM node:18.16.0-alpine3.17 as prod
+FROM node:18.16.0-alpine3.17 as build
 
 WORKDIR /app
 
-COPY package*.json ./
+ENV PATH /app/node_modules/.bin:$PATH
 
-RUN npm install
+COPY package.json /app/package.json
 
-COPY . .
+RUN npm install --silent
 
-ARG REACT_APP_API_BASE_URL
-ENV REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
+RUN npm install react-scripts@3.0.1 -g --silent
+
+COPY . /app
 
 RUN npm run build
 
@@ -17,11 +18,11 @@ RUN npm run build
 
 FROM nginx:1.24.0-alpine
 
-WORKDIR /usr/share/nginx/html
+COPY --from=build /app/build /usr/share/nginx/html
 
-COPY --from=prod /app/build /var/www
+RUN rm /etc/nginx/conf.d/default.conf
 
-COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY ./nginx.conf /etc/nginx/conf.d
 
 EXPOSE 80
 

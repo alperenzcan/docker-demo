@@ -1,18 +1,38 @@
-FROM maven:3.8.4-openjdk-17 AS MAVEN_BUILD
-COPY pom.xml /build/
-COPY mvnw /build/
-COPY .mvn /build/.mvn
-COPY src /build/src/
-WORKDIR /build/
-RUN mvn clean install -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -B --no-transfer-progress -e && mvn package  -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -B --no-transfer-progress -e
+# FROM eclipse-temurin:17-jdk-focal
+ 
+# WORKDIR /app
+ 
+# COPY .mvn/ .mvn
+# COPY mvnw pom.xml ./
+# RUN ./mvnw dependency:go-offline
+ 
+# COPY src ./src
+ 
+# CMD ["./mvnw", "spring-boot:run"]
 
-FROM openjdk:17-oracle
+
+
+# FROM openjdk:17-alpine
+ 
+# WORKDIR /app
+ 
+# COPY .mvn/ .mvn
+# COPY mvnw pom.xml ./
+# RUN chmod +x mvnw && ./mvnw dependency:go-offline
+# COPY src ./src
+ 
+# CMD ["./mvnw", "spring-boot:run"]
+
+
+
+# 372MB
+FROM maven:3.8.4-openjdk-17-slim AS builder
 WORKDIR /app
-COPY --from=MAVEN_BUILD /build/target/server-0.0.1-SNAPSHOT.jar /app/server.jar
-EXPOSE 8080
-ENTRYPOINT [  "java",                                     \
-              "-Dfile.encoding=UTF-8",                    \
-              "-Djava.security.egd=file:/dev/./urandom",  \
-              "-jar",                                     \
-              "/app/server.jar"                        \
-           ]
+COPY . /app
+RUN mvn clean package -DskipTests
+ 
+# Runtime Image
+FROM openjdk:17-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*.jar /app/app.jar
+CMD ["java", "-jar", "/app/app.jar"]
