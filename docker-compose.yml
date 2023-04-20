@@ -29,6 +29,7 @@ services:
 
   mysql:
     image: mysql:8.0.28
+    container_name: mysql
     ports:
       - 3306:3306
     volumes:
@@ -39,6 +40,19 @@ services:
       MYSQL_USER: example_user
       MYSQL_PASSWORD: password123
     restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
 
 volumes:
   dbdata: 
