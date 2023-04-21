@@ -16,6 +16,8 @@ services:
     depends_on:
       - mysql
     restart: always
+    volumes:
+      - file-storage:/app/files
 
   client:
     build:
@@ -26,8 +28,14 @@ services:
     depends_on:
       - server
     restart: always
+    # volumes:
+      # - frontend-volume:/app/public
+      # - backend-volume:/app/files
 
   mysql:
+    # build:
+    #   context: mysql
+    #   dockerfile: Dockerfile
     image: mysql:8.0.28
     container_name: mysql
     ports:
@@ -56,3 +64,5 @@ services:
 
 volumes:
   dbdata: 
+  file-storage: 
+  # frontend-volume:
